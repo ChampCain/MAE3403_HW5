@@ -1,6 +1,15 @@
+#Champ Cain
+#MAE 3403
+#HW5c
+
+# I used AI to help with implementing the ODE's. I was initially pushing out negative
+# pressures and they never did converge. It helped me identify what I could do
+# to help the code converge.
+
+
 # region imports
 import numpy as np
-from scipy.integrate import #JES MISSING CODE
+from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 # endregion
 
@@ -20,70 +29,72 @@ def ode_system(t, X, *params):
     :return: The list of derivatives of the state variables.
     '''
     #unpack the parameters
-    A, Cd, ps, pa, V, beta, rho, Kvalve, m, y=params
+    A, Cd, ps, pa, V, beta, rho, Kvalve, m, y = params
 
     #state variables
-    #X[0]=x
-    #X[1]=xdot
-    #X[2]=p1
-    #X[3]=p2
-
-    #calculate derivitives
     #conveniently rename the state variables
-    x = #JES MISSING CODE
-    xdot = #JES MISSING CODE
-    p1 = #JES MISSING CODE
-    p2 = #JES MISSING CODE
+    x = X[0]
+    xdot = X[1]
+    p1 = X[2]
+    p2 = X[3]
 
-    #use my equations from the assignment
-    xddot = #JES MISSING CODE
-    p1dot = #JES MISSING CODE
-    p2dot = #JES MISSING CODE
+    #calculate derivatives
+    xddot = (p1 - p2) * A / m
+    p1dot = (y * Kvalve * (ps - p1) - rho * A * xdot) * (beta / (V * rho))
+    p2dot = (-y * Kvalve * (p2 - pa) + rho * A * xdot) * (beta / (rho * V))
+
+    # Ensure pressures do not go negative
+    if p1 < 0:
+        p1 = 0
+        p1dot = 0
+    if p2 < 0:
+        p2 = 0
+        p2dot = 0
 
     #return the list of derivatives of the state variables
-    return [#JES MISSING CODE]
+    return [xdot, xddot, p1dot, p2dot]
 
 def main():
     #After some trial and error, I found all the action seems to happen in the first 0.02 seconds
-    t=np.linspace(0,0.02,200)
+    t = np.linspace(0, 0.02, 200)
     #myargs=(A, Cd, Ps, Pa, V, beta, rho, Kvalve, m, y)
-    myargs=(4.909E-4, 0.6, 1.4E7,1.0E5,1.473E-4,2.0E9,850.0,2.0E-5,30, 0.002)
+    myargs = (4.909E-4, 0.6, 1.4E7, 1.0E5, 1.473E-4, 2.0E9, 850.0, 2.0E-5, 30, 0.002)
     #because the solution calls for x, xdot, p1 and p2, I make these the state variables X[0], X[1], X[2], X[3]
     #ic=[x=0, xdot=0, p1=pa, p2=pa]
-    pa = #JES MISSING CODE
-    ic = #JES MISSING CODE
-    #call odeint with ode_system as callback
-    sln=solve_ivp(#JES MISSING CODE)
+    pa = 1.0E5
+    ic = [0, 0, pa, pa]
+    #call solve_ivp with ode_system as callback
+    sln = solve_ivp(ode_system, [0, 0.02], ic, args=myargs, t_eval=t)
 
     #unpack result into meaningful names
-    xvals=sln.y[0]
-    xdot=sln.y[1]
-    p1=sln.y[2]
-    p2=sln.y[3]
+    xvals = sln.y[0]
+    xdot = sln.y[1]
+    p1 = sln.y[2]
+    p2 = sln.y[3]
 
     #plot the result
-    plt.subplot(2, 1, 1)
-    plt.subplot(2, 1, 1)
-    plt.plot(t, xvals, 'r-', label='$x$')
-    plt.ylabel('$x$')
-    plt.legend(loc='upper left')
+    plt.figure(figsize=(10, 8))
 
-    ax2=plt.twinx()
-    ax2.plot(t, xdot, 'b-', label='$\dot{x}$')
-    plt.ylabel('$\dot{x}$')
-    plt.legend(loc='lower right')
+    plt.subplot(2, 1, 1)
+    plt.plot(t, xdot, 'b-', label='$\dot{x}$')
+    plt.title('Velocity of the Piston vs Time')
+    plt.xlabel('Time, s')
+    plt.ylabel('$\dot{x}$ (m/s)')
+    plt.legend(loc='upper right')
 
-    plt.subplot(2,1,2)
+    plt.subplot(2, 1, 2)
     plt.plot(t, p1, 'b-', label='$P_1$')
     plt.plot(t, p2, 'r-', label='$P_2$')
-    plt.legend(loc='lower right')
+    plt.title('Pressures $P_1$ and $P_2$ vs Time')
     plt.xlabel('Time, s')
-    plt.ylabel('$P_1, P_2 (Pa)$')
+    plt.ylabel('Pressure (Pa)')
+    plt.legend(loc='upper right')
 
+    plt.tight_layout()
     plt.show()
 # endregion
 
 # region function calls
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
 # endregion

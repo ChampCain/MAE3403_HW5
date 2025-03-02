@@ -1,6 +1,6 @@
 #Champ Cain
 #MAE 3403
-#HW5
+#HW5a
 
 # I used AI to help me identify which iterative process would me the graph.
 # I initially used fsolve, but it was getting messed up as it was being divided by

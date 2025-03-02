@@ -1,3 +1,11 @@
+#Champ Cain
+#MAE 3403
+#HW5b
+
+# AI helped me identify that I needed to go back to part "a" and add in a segment
+# of code to identify a circle or triangle on the graph
+
+
 # region imports
 import hw5a as pta
 import random as rnd
